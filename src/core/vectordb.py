@@ -15,4 +15,5 @@ def create_vector_db(documents, embedding_model, persist_directory):
     return db
 
 def load_vector_db(persist_directory, embedding_model):
-    return Chroma(persist_directory=persist_directory, embedding_function=embedding_model)
+    db = Chroma(persist_directory=persist_directory, embedding_function=embedding_model)
+    return db
