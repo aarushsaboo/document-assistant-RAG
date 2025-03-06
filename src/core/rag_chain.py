@@ -1,4 +1,4 @@
-# rag_chain.py
+# src/core/rag_chain.py
 from langchain_google_genai import GoogleGenerativeAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import RetrievalQA

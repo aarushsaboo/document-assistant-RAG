@@ -1,4 +1,4 @@
-# document_processor.py
+# src/core/document_processor.py
 from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 

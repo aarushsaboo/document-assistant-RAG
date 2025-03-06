@@ -1,9 +1,9 @@
-# main.py
+# src/main.py
 import os
-from config import GOOGLE_API_KEY, DOCUMENTS_DIR, DB_DIR
-from document_processor import load_documents, split_documents
-from vectordb import get_embeddings, create_vector_db, load_vector_db
-from rag_chain import create_prompt, create_llm, setup_qa_chain
+from core.config import GOOGLE_API_KEY, DOCUMENTS_DIR, DB_DIR
+from core.document_processor import load_documents, split_documents
+from core.vectordb import get_embeddings, create_vector_db, load_vector_db
+from core.rag_chain import create_prompt, create_llm, setup_qa_chain
 
 def initialize_document_db():
     os.makedirs(DOCUMENTS_DIR, exist_ok=True)
