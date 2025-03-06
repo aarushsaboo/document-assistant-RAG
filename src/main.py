@@ -1,5 +1,5 @@
-# src/main.py
 import os
+import streamlit as st
 from core.config import GOOGLE_API_KEY, DOCUMENTS_DIR, DB_DIR
 from core.document_processor import load_documents, split_documents
 from core.vectordb import get_embeddings, create_vector_db, load_vector_db
@@ -9,77 +9,92 @@ def initialize_document_db():
     os.makedirs(DOCUMENTS_DIR, exist_ok=True) #ensures that directories exist
     os.makedirs(DB_DIR, exist_ok=True)
     
-    print("Loading documents...")
+    st.info("Loading documents...")
     documents = load_documents(DOCUMENTS_DIR)
     
     if not documents:
-        print(f"No documents found in {DOCUMENTS_DIR}. Please add PDF documents before querying.")
+        st.error(f"No documents found in {DOCUMENTS_DIR}. Please add PDF documents before querying.")
         return None
     
-    print(f"Loaded {len(documents)} document chunks")
+    st.info(f"Loaded {len(documents)} document chunks")
     
     chunks = split_documents(documents)
-    print(f"Split into {len(chunks)} chunks")
+    st.info(f"Split into {len(chunks)} chunks")
     
-    print("Creating embeddings...")
+    st.info("Creating embeddings...")
     embeddings = get_embeddings()
     
     db = create_vector_db(chunks, embeddings, DB_DIR)
-    print(f"Created and persisted vector database in {DB_DIR}")
+    st.success(f"Created and persisted vector database in {DB_DIR}")
     
     return db
 
 def load_existing_db():
     if not os.path.exists(DB_DIR):
-        print(f"No existing database found in {DB_DIR}")
+        st.warning(f"No existing database found in {DB_DIR}")
         return None
     
-    print("Loading existing vector database...")
+    st.info("Loading existing vector database...")
     embeddings = get_embeddings()
     db = load_vector_db(DB_DIR, embeddings)
     return db
 
 def process_query(qa_chain, query):
-    print("\nSearching for relevant information...")
-    try:
-        result = qa_chain.invoke({"query": query})
+    if not query:
+        return
         
-        print("\nAnswer:")
-        print(result["result"]) #qa_chain.invoke({"query": query}) returns a dictionary with result & source_documents as keys
+    with st.spinner("Searching for relevant information..."):
+        try:
+            result = qa_chain.invoke({"query": query}) #qa_chain.invoke({"query": query}) returns a dictionary with result & source_documents as keys
+            
+            st.write("### Answer:")
+            st.write(result["result"]) 
 
-        print("\nSources:")
-        for i, doc in enumerate(result["source_documents"], 1):
-            print(f"Source {i}:")
-            print(f"- Content: {doc.page_content[:150]}...")
-            print(f"- Source: {doc.metadata.get('source', 'Unknown')}, Page: {doc.metadata.get('page', 'Unknown')}")
-            print()
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        print("If this is a model-related error, try checking available models or using a different model.")
+            st.write("### Sources:")
+            for i, doc in enumerate(result["source_documents"], 1):
+                with st.expander(f"Source {i}"):
+                    st.write(f"**Content:** {doc.page_content[:150]}...")
+                    st.write(f"**Source:** {doc.metadata.get('source', 'Unknown')}, **Page:** {doc.metadata.get('page', 'Unknown')}")
+        except Exception as e:
+            st.error(f"An error occurred: {e}")
+            st.error("If this is a model-related error, try checking available models or using a different model.")
 
 def main():
-    print("Welcome to the RAG Document Assistant!")
+    st.set_page_config(page_title="RAG Document Assistant", layout="wide")
+    st.title("RAG Document Assistant")
     
-    db = load_existing_db()
-    if db is None:
-        db = initialize_document_db()
-        if db is None:
-            return
+    # Initialize session state for the database and QA chain
+    if 'db' not in st.session_state:
+        st.session_state.db = None
+    if 'qa_chain' not in st.session_state:
+        st.session_state.qa_chain = None
     
-    prompt = create_prompt()
-    llm = create_llm(GOOGLE_API_KEY)
-    qa_chain = setup_qa_chain(db, llm, prompt)
+    # Sidebar for database initialization
+    with st.sidebar:
+        st.header("Database Management")
+        if st.button("Initialize/Reload Database"):
+            db = load_existing_db()
+            if db is None:
+                db = initialize_document_db()
+            st.session_state.db = db
+            
+            if st.session_state.db is not None:
+                prompt = create_prompt()
+                llm = create_llm(GOOGLE_API_KEY)
+                st.session_state.qa_chain = setup_qa_chain(st.session_state.db, llm, prompt)
+                st.success("Database and QA chain initialized successfully!")
+        
+        st.markdown("---")
+        st.markdown(f"Document Directory: `{DOCUMENTS_DIR}`")
+        st.markdown(f"Database Directory: `{DB_DIR}`")
     
-    while True:
-        query = input("\nEnter your question (or 'exit' to quit): ")
-        
-        if query.lower() in ['exit', 'quit', 'q']:
-            break
-        
-        if not query.strip():
-            continue
-        
-        process_query(qa_chain, query)
+    # Main content area
+    if st.session_state.db is None:
+        st.warning("Please initialize the database first by clicking the button in the sidebar.")
+    else:
+        query = st.text_input("Enter your question:")
+        if st.button("Submit") or query:
+            process_query(st.session_state.qa_chain, query)
 
 if __name__ == "__main__":
     main()
