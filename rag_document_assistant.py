@@ -3,7 +3,7 @@ from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_google_genai import GoogleGenerativeAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import RetrievalQA
 import google.generativeai as genai
@@ -88,9 +88,9 @@ def setup_rag_chain(db):
         input_variables=["context", "question"]
     )
     
-    # Initialize the language model
-    llm = ChatGoogleGenerativeAI(
-        model="gemini-pro",
+    # Initialize the language model - updated to use the correct class and model name
+    llm = GoogleGenerativeAI(
+        model="gemini-1.5-flash",  # Use a valid model name
         google_api_key=GOOGLE_API_KEY,
         temperature=0.2
     )
@@ -132,17 +132,22 @@ def main():
             continue
         
         print("\nSearching for relevant information...")
-        result = qa_chain({"query": query})
-        
-        print("\nAnswer:")
-        print(result["result"])
-        
-        print("\nSources:")
-        for i, doc in enumerate(result["source_documents"], 1):
-            print(f"Source {i}:")
-            print(f"- Content: {doc.page_content[:150]}...")
-            print(f"- Source: {doc.metadata.get('source', 'Unknown')}, Page: {doc.metadata.get('page', 'Unknown')}")
-            print()
+        try:
+            # Update to use the new invoke method instead of __call__
+            result = qa_chain.invoke({"query": query})
+            
+            print("\nAnswer:")
+            print(result["result"])
+            
+            print("\nSources:")
+            for i, doc in enumerate(result["source_documents"], 1):
+                print(f"Source {i}:")
+                print(f"- Content: {doc.page_content[:150]}...")
+                print(f"- Source: {doc.metadata.get('source', 'Unknown')}, Page: {doc.metadata.get('page', 'Unknown')}")
+                print()
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            print("If this is a model-related error, try checking available models or using a different model.")
 
 if __name__ == "__main__":
     main()
