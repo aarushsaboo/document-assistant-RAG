@@ -6,7 +6,7 @@ from langchain_google_genai import GoogleGenerativeAI
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Configuration variables
-GOOGLE_API_KEY = "AIzaSyC5zEinq8gaFKWr33_Mjusxbm-fyYS0YZA"
+GOOGLE_API_KEY = "AIzaSyAPDeEAmZK7Ls5ZC2Ahr-CrmjkmDNRQnwg"
 DOCUMENTS_DIR = os.path.join(PROJECT_ROOT, "documents")
 DB_DIR = os.path.join(PROJECT_ROOT, "db")
 
