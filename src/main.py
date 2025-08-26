@@ -1,4 +1,7 @@
+# Add this at the very top of main.py, before other imports
 import os
+os.environ['STREAMLIT_SERVER_FILE_WATCHER_TYPE'] = 'none'
+
 import streamlit as st
 from core.config import GOOGLE_API_KEY, DOCUMENTS_DIR, DB_DIR
 from core.document_processor import load_documents, split_documents

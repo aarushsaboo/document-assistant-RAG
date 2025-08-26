@@ -1,5 +1,6 @@
 venv/
 db/
-_pycache_/
+__pycache__/
 *.pyc
 *.pyo
+__pycache__/
