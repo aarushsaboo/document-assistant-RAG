@@ -6,7 +6,7 @@ from core.vectordb import get_embeddings, create_vector_db, load_vector_db
 from core.rag_chain import create_prompt, create_llm, setup_qa_chain
 
 def initialize_document_db():
-    os.makedirs(DOCUMENTS_DIR, exist_ok=True) #ensures that directories exist
+    os.makedirs(DOCUMENTS_DIR, exist_ok=True) # if it already exists, don't throw an error
     os.makedirs(DB_DIR, exist_ok=True)
     
     st.info("Loading documents...")
@@ -45,7 +45,7 @@ def process_query(qa_chain, query):
         
     with st.spinner("Searching for relevant information..."):
         try:
-            result = qa_chain.invoke({"query": query}) #qa_chain.invoke({"query": query}) returns a dictionary with result & source_documents as keys
+            result = qa_chain.invoke({"query": query}) 
             
             st.write("### Answer:")
             st.write(result["result"]) 

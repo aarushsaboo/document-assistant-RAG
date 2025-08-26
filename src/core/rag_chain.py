@@ -30,10 +30,10 @@ def create_llm(api_key):
     )
 
 def setup_qa_chain(db, llm, prompt):
-    retriever = db.as_retriever(search_kwargs={"k": 4}) # This turns the database into a retriever. ie When searching for an answer, retrieve the top 4 most relevant chunks from the vector DB.. Finds relevant document chunks from db: the Chroma vector database (stores embeddings of documents).
-    qa_chain = RetrievalQA.from_chain_type( # question-answering pipeline
+    retriever = db.as_retriever(search_kwargs={"k": 4})
+    qa_chain = RetrievalQA.from_chain_type(
         llm=llm,
-        chain_type="stuff", # chain_type tells it how to process retrieved documents & "stuff" means concatenate all retrieved documents into one prompt
+        chain_type="stuff", #how to process retrieved documents & "stuff" means concatenate all retrieved documents into one prompt ( There's also "map_reduce" or "refine")
         retriever=retriever,
         return_source_documents=True, # will return the actual documents used
         chain_type_kwargs={"prompt": prompt} # ensures the custom PromptTemplate is used
