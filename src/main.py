@@ -30,7 +30,12 @@ def initialize_document_db():
     return db
 
 def load_existing_db():
-    if not os.path.exists(DB_DIR):
+    # Check if the actual FAISS files exist
+    index_faiss_path = os.path.join(DB_DIR, "index.faiss")
+    index_pkl_path = os.path.join(DB_DIR, "index.pkl")
+    
+    if not os.path.exists(index_faiss_path) or not os.path.exists(index_pkl_path):
+        
         st.warning(f"No existing database found in {DB_DIR}")
         return None
     
